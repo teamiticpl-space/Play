@@ -45,7 +45,7 @@ export default function EditQuizPage() {
 
   const loadQuiz = async () => {
     setLoading(true)
-    const { data, error } = await supabase
+    const { data, error } = await (supabase
       .from('quiz_sets')
       .select(`
         *,
@@ -55,7 +55,7 @@ export default function EditQuizPage() {
         )
       `)
       .eq('id', quizId)
-      .single()
+      .single() as any)
 
     if (error || !data) {
       setError('Failed to load quiz')
@@ -64,7 +64,7 @@ export default function EditQuizPage() {
     }
 
     // Check ownership
-    if (data.user_id !== user?.id) {
+    if ((data as any).user_id !== user?.id) {
       alert('You do not have permission to edit this quiz')
       router.push('/host/dashboard')
       return
@@ -211,7 +211,7 @@ export default function EditQuizPage() {
             body: c.body,
             is_correct: c.is_correct,
           })),
-        })
+        } as any)
       }
 
       alert('Quiz updated successfully!')

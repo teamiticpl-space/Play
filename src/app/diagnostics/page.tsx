@@ -107,10 +107,10 @@ export default function DiagnosticsPage() {
 
     // Test 5: Database Tables
     try {
-      const tables = ['quiz_sets', 'questions', 'choices', 'games', 'participants', 'answers', 'profiles']
+      const tables = ['quiz_sets', 'questions', 'choices', 'games', 'participants', 'answers', 'profiles'] as const
       const results = await Promise.all(
         tables.map(async (table) => {
-          const { error } = await supabase.from(table).select('id').limit(1)
+          const { error } = await supabase.from(table as any).select('id').limit(1)
           return { table, exists: !error }
         })
       )
@@ -289,7 +289,7 @@ export default function DiagnosticsPage() {
           <div className="space-y-4">
             {results.length === 0 && !running && (
               <div className="text-center text-gray-500 py-8">
-                Click "Run Diagnostics" to start
+                Click &quot;Run Diagnostics&quot; to start
               </div>
             )}
 

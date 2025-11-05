@@ -25,11 +25,13 @@ export default function DashboardPage() {
   }, [user, loading, router])
 
   const getQuizSets = async () => {
+    if (!user?.id) return
+
     setLoadingQuizzes(true)
     const { data, error } = await supabase
       .from('quiz_sets')
       .select(`*, questions(*, choices(*))`)
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -63,7 +65,7 @@ export default function DashboardPage() {
     if (!newName) return
 
     try {
-      const { data, error } = await supabase.rpc('duplicate_quiz', {
+      const { data, error } = await supabase.rpc('duplicate_quiz' as any, {
         original_quiz_id: quizId,
         new_name: newName,
       })

@@ -159,7 +159,7 @@ export default function CreateQuizPage() {
             body: c.body,
             is_correct: c.is_correct,
           })),
-        })
+        } as any)
       }
 
       router.push('/host/dashboard')

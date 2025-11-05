@@ -42,19 +42,21 @@ export default function AnalyticsPage() {
   }, [selectedQuiz])
 
   const loadData = async () => {
+    if (!user?.id) return
+
     setLoading(true)
 
     // Load user's quizzes
     const { data: quizzesData } = await supabase
       .from('quiz_sets')
       .select('*')
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
 
     setQuizzes(quizzesData || [])
 
     // Load quiz analytics
     const { data: analyticsData } = await supabase
-      .from('quiz_analytics')
+      .from('quiz_analytics' as any)
       .select('*')
 
     const userAnalytics = analyticsData?.filter((a) =>
@@ -67,7 +69,7 @@ export default function AnalyticsPage() {
 
   const loadQuestionAnalytics = async (quizId: string) => {
     const { data } = await supabase
-      .from('question_analytics')
+      .from('question_analytics' as any)
       .select('*')
       .eq('quiz_set_id', quizId)
 
