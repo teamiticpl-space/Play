@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    if (!loading && (!user || user.is_anonymous)) {
+    if (!loading && (!user || (user as any).is_anonymous)) {
       router.push('/auth/login')
       return
     }
@@ -27,10 +27,12 @@ export default function ProfilePage() {
   }, [user, loading, router])
 
   const loadProfile = async () => {
+    if (!user?.id) return
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user?.id)
+      .eq('id', user.id)
       .single()
 
     if (data) {
@@ -45,6 +47,12 @@ export default function ProfilePage() {
     setSaving(true)
     setMessage('')
 
+    if (!user?.id) {
+      setMessage('User not authenticated')
+      setSaving(false)
+      return
+    }
+
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -52,7 +60,7 @@ export default function ProfilePage() {
         username: username,
         bio: bio,
       })
-      .eq('id', user?.id)
+      .eq('id', user.id)
 
     if (error) {
       setMessage('Error saving profile')

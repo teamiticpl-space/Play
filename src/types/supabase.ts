@@ -188,6 +188,33 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          username: string | null
+          bio: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          username?: string | null
+          bio?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          username?: string | null
+          bio?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           body: string
@@ -229,18 +256,21 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
           name: string
+          user_id: string
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
           name?: string
+          user_id?: string
         }
         Relationships: []
       }

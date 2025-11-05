@@ -130,16 +130,19 @@ export default function CreateQuizPage() {
     setError('')
 
     try {
+      // Ensure user is authenticated
+      if (!user?.id) {
+        setError('You must be logged in to create a quiz')
+        return
+      }
+
       // Create quiz set
       const { data: quizSet, error: quizError } = await supabase
         .from('quiz_sets')
         .insert({
           name: quizName,
           description: quizDescription,
-          user_id: user?.id,
-          is_public: isPublic,
-          theme_id: themeId,
-          auto_advance_time: autoAdvanceTime,
+          user_id: user.id,
         })
         .select()
         .single()

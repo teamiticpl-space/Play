@@ -56,7 +56,8 @@ export default function Results({
   }, [gameId])
 
   // Helper function to get participant avatar by ID
-  const getParticipantAvatar = (participantId: string) => {
+  const getParticipantAvatar = (participantId: string | null) => {
+    if (!participantId) return undefined
     const participant = participants.find(p => p.id === participantId)
     return (participant as any)?.avatar_id
   }

@@ -10,7 +10,7 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && user && !user.is_anonymous) {
+    if (!loading && user && !(user as any).is_anonymous) {
       router.push('/host/dashboard')
     }
   }, [user, loading, router])

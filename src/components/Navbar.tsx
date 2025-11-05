@@ -24,7 +24,7 @@ export default function Navbar() {
           </Link>
 
           <div className="flex items-center gap-4">
-            {user && !user.is_anonymous && (
+            {user && !(user as any).is_anonymous && (
               <>
                 <Link
                   href="/host/dashboard"
@@ -83,7 +83,7 @@ export default function Navbar() {
               </>
             )}
 
-            {(!user || user.is_anonymous) && (
+            {(!user || (user as any).is_anonymous) && (
               <>
                 <Link
                   href="/auth/login"
