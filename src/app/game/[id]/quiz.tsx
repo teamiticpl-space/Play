@@ -159,22 +159,24 @@ export default function Quiz({
       )}
 
       {!hasShownChoices && !isAnswerRevealed && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-transparent flex justify-center">
-          {typeof window !== 'undefined' && (
-            <CountdownCircleTimer
-              onComplete={() => {
-                setHasShownChoices(true)
-                setQuestionStartTime(Date.now())
-              }}
-              isPlaying
-              duration={TIME_TIL_CHOICE_REVEAL / 1000}
-              colors={['#fff', '#fff', '#fff', '#fff']}
-              trailColor={'transparent' as ColorFormat}
-              colorsTime={[7, 5, 2, 0]}
-            >
-              {({ remainingTime }) => remainingTime}
-            </CountdownCircleTimer>
-          )}
+        <div className="flex-grow flex justify-center items-center">
+          <div className="text-transparent flex justify-center">
+            {typeof window !== 'undefined' && (
+              <CountdownCircleTimer
+                onComplete={() => {
+                  setHasShownChoices(true)
+                  setQuestionStartTime(Date.now())
+                }}
+                isPlaying
+                duration={TIME_TIL_CHOICE_REVEAL / 1000}
+                colors={['#fff', '#fff', '#fff', '#fff']}
+                trailColor={'transparent' as ColorFormat}
+                colorsTime={[7, 5, 2, 0]}
+              >
+                {({ remainingTime }) => remainingTime}
+              </CountdownCircleTimer>
+            )}
+          </div>
         </div>
       )}
 
