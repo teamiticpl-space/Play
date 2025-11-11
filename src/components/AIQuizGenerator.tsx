@@ -107,10 +107,21 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
         }),
       })
 
-      const data = await response.json()
+      // Parse response
+      let data
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError)
+        throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to generate quiz')
+      }
+
+      if (!data.success || !data.questions) {
+        throw new Error('Response ไม่ถูกต้อง ไม่พบคำถามที่สร้าง')
       }
 
       // Transform AI response to match our Question interface

@@ -159,24 +159,43 @@ export async function POST(request: NextRequest) {
   try {
     // Check for API key
     if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is not configured')
       return NextResponse.json(
-        { error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables.' },
+        {
+          success: false,
+          error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables.'
+        },
         { status: 500 }
       )
     }
 
-    const body: GenerateQuizRequest = await request.json()
-
-    // Validate request
-    if (!body.type || !body.content) {
+    // Parse request body
+    let body: GenerateQuizRequest
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError)
       return NextResponse.json(
-        { error: 'Missing required fields: type and content' },
+        { success: false, error: 'Invalid request body' },
         { status: 400 }
       )
     }
 
+    // Validate request
+    if (!body.type || !body.content) {
+      console.error('Missing required fields:', { type: body.type, hasContent: !!body.content })
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: type and content' },
+        { status: 400 }
+      )
+    }
+
+    console.log('Generating quiz:', { type: body.type, questions: body.numberOfQuestions, difficulty: body.difficulty })
+
     // Generate quiz
     const questions = await generateQuiz(body)
+
+    console.log('Successfully generated quiz:', questions.length, 'questions')
 
     return NextResponse.json({
       success: true,
@@ -186,8 +205,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Generate Quiz Error:', error)
+    // Always return valid JSON even on error
     return NextResponse.json(
-      { error: error.message || 'Failed to generate quiz' },
+      {
+        success: false,
+        error: error.message || 'Failed to generate quiz',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     )
   }
