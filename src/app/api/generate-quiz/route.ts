@@ -108,15 +108,23 @@ Return ONLY a valid JSON array with this exact structure:
 Do not include any markdown formatting, code blocks, or extra text. Return ONLY the JSON array.`
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Using GPT-4o-mini for cost efficiency (can change to gpt-4 for better quality)
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: promptContent },
-      ],
-      temperature: 0.7,
-      max_tokens: 4000,
-    })
+    // Adjust max_tokens based on number of questions to stay within Netlify timeout (10s)
+    const estimatedTokens = Math.min(numberOfQuestions * 300 + 500, 2500)
+
+    const completion = await openai.chat.completions.create(
+      {
+        model: 'gpt-4o-mini', // Using GPT-4o-mini for cost efficiency (can change to gpt-4 for better quality)
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: promptContent },
+        ],
+        temperature: 0.7,
+        max_tokens: estimatedTokens,
+      },
+      {
+        timeout: 8000, // 8 seconds to stay within Netlify's 10s limit
+      }
+    )
 
     const responseText = completion.choices[0].message.content?.trim() || '[]'
 

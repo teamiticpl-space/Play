@@ -29,7 +29,7 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
   const [textContent, setTextContent] = useState('')
   const [url, setUrl] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
-  const [numberOfQuestions, setNumberOfQuestions] = useState(10)
+  const [numberOfQuestions, setNumberOfQuestions] = useState(5)
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
@@ -299,11 +299,11 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
                 onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value={5}>5 คำถาม</option>
+                <option value={3}>3 คำถาม (เร็วที่สุด)</option>
+                <option value={5}>5 คำถาม (แนะนำ)</option>
                 <option value={10}>10 คำถาม</option>
-                <option value={15}>15 คำถาม</option>
-                <option value={20}>20 คำถาม</option>
               </select>
+              <p className="text-xs text-gray-500 mt-1">⚡ คำถามน้อยลง = สร้างเร็วขึ้น</p>
             </div>
 
             <div>
