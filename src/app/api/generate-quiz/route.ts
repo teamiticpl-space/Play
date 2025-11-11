@@ -89,6 +89,14 @@ Instructions:
 7. Provide a brief explanation for the correct answer
 8. Set appropriate time limits (10-30 seconds) and points (500-2000) based on difficulty
 
+IMPORTANT - LANGUAGE:
+- **Detect the language of the source content**
+- **Create ALL questions, choices, and explanations in the SAME LANGUAGE as the source content**
+- If content is in Thai (ภาษาไทย), write questions in Thai
+- If content is in English, write questions in English
+- If content is in other languages, match that language
+- DO NOT translate or change the language
+
 Return ONLY a valid JSON array with this exact structure:
 [
   {
