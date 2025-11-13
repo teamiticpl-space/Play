@@ -31,6 +31,7 @@ export default function CreateQuizPage() {
   const [quizName, setQuizName] = useState('')
   const [quizDescription, setQuizDescription] = useState('')
   const [themeId, setThemeId] = useState('classic')
+  const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true)
   const [autoAdvanceTime, setAutoAdvanceTime] = useState(5)
   const [isPublic, setIsPublic] = useState(true)
   const [teamMode, setTeamMode] = useState(false)
@@ -157,7 +158,7 @@ export default function CreateQuizPage() {
           name: quizName,
           description: quizDescription,
           user_id: user.id,
-          auto_advance_time: autoAdvanceTime,
+          auto_advance_time: autoAdvanceEnabled ? autoAdvanceTime : 0,
           is_public: isPublic,
           theme_id: themeId,
           team_mode: teamMode,
@@ -240,32 +241,49 @@ export default function CreateQuizPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">
-              Auto-Advance Timer ⏱️
-            </label>
-            <div className="flex items-center gap-2 sm:gap-4">
+          <div className="border-t pt-4 mt-2">
+            <div className="flex items-center mb-3">
               <input
-                type="range"
-                min="0"
-                max="30"
-                value={autoAdvanceTime}
-                onChange={(e) => setAutoAdvanceTime(parseInt(e.target.value))}
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                type="checkbox"
+                id="autoAdvanceEnabled"
+                checked={autoAdvanceEnabled}
+                onChange={(e) => setAutoAdvanceEnabled(e.target.checked)}
+                className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
               />
-              <div className="w-20 sm:w-32 text-center flex-shrink-0">
-                {autoAdvanceTime === 0 ? (
-                  <span className="text-xs sm:text-sm font-semibold text-gray-600">Manual</span>
-                ) : (
-                  <span className="text-base sm:text-lg font-bold text-purple-600">{autoAdvanceTime}s</span>
-                )}
-              </div>
+              <label htmlFor="autoAdvanceEnabled" className="ml-2 text-gray-700 text-sm sm:text-base font-semibold">
+                ⏱️ Enable Auto-Advance Timer
+              </label>
             </div>
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              {autoAdvanceTime === 0
-                ? '⚠️ Manual mode: Click "Next" button to continue'
-                : `✨ Auto-advance to next question after ${autoAdvanceTime} seconds`}
-            </p>
+
+            {autoAdvanceEnabled && (
+              <div className="ml-7 pl-3 border-l-4 border-purple-200">
+                <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">
+                  Auto-Advance Time
+                </label>
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <input
+                    type="range"
+                    min="3"
+                    max="30"
+                    value={autoAdvanceTime}
+                    onChange={(e) => setAutoAdvanceTime(parseInt(e.target.value))}
+                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                  />
+                  <div className="w-20 text-center flex-shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-purple-600">{autoAdvanceTime}s</span>
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-500 mt-2">
+                  ✨ Auto-advance to next question after {autoAdvanceTime} seconds
+                </p>
+              </div>
+            )}
+
+            {!autoAdvanceEnabled && (
+              <p className="text-xs sm:text-sm text-gray-500 ml-7">
+                ⚠️ Manual mode: Host will need to click &quot;Next&quot; button to continue
+              </p>
+            )}
           </div>
 
           <div className="flex items-center">

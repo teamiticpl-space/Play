@@ -31,6 +31,7 @@ export default function EditQuizPage() {
 
   const [quizName, setQuizName] = useState('')
   const [quizDescription, setQuizDescription] = useState('')
+  const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true)
   const [autoAdvanceTime, setAutoAdvanceTime] = useState(5)
   const [isPublic, setIsPublic] = useState(true)
   const [teamMode, setTeamMode] = useState(false)
@@ -76,7 +77,9 @@ export default function EditQuizPage() {
 
     setQuizName(data.name)
     setQuizDescription(data.description || '')
-    setAutoAdvanceTime((data as any).auto_advance_time ?? 5)
+    const autoAdvTime = (data as any).auto_advance_time ?? 5
+    setAutoAdvanceEnabled(autoAdvTime > 0)
+    setAutoAdvanceTime(autoAdvTime > 0 ? autoAdvTime : 5)
     setIsPublic(data.is_public)
     setTeamMode((data as any).team_mode ?? false)
     setMaxTeams((data as any).max_teams ?? 2)
@@ -197,7 +200,7 @@ export default function EditQuizPage() {
         .update({
           name: quizName,
           description: quizDescription,
-          auto_advance_time: autoAdvanceTime,
+          auto_advance_time: autoAdvanceEnabled ? autoAdvanceTime : 0,
           is_public: isPublic,
           team_mode: teamMode,
           max_teams: teamMode ? maxTeams : 2,
@@ -282,32 +285,49 @@ export default function EditQuizPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Auto-Advance Timer ⏱️
-            </label>
-            <div className="flex items-center gap-4">
+          <div className="border-t pt-4 mt-2">
+            <div className="flex items-center mb-3">
               <input
-                type="range"
-                min="0"
-                max="30"
-                value={autoAdvanceTime}
-                onChange={(e) => setAutoAdvanceTime(parseInt(e.target.value))}
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                type="checkbox"
+                id="autoAdvanceEnabled"
+                checked={autoAdvanceEnabled}
+                onChange={(e) => setAutoAdvanceEnabled(e.target.checked)}
+                className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
               />
-              <div className="w-32 text-center">
-                {autoAdvanceTime === 0 ? (
-                  <span className="text-sm font-semibold text-gray-600">Manual</span>
-                ) : (
-                  <span className="text-lg font-bold text-purple-600">{autoAdvanceTime}s</span>
-                )}
-              </div>
+              <label htmlFor="autoAdvanceEnabled" className="ml-2 text-gray-700 text-sm sm:text-base font-semibold">
+                ⏱️ Enable Auto-Advance Timer
+              </label>
             </div>
-            <p className="text-sm text-gray-500 mt-2">
-              {autoAdvanceTime === 0
-                ? '⚠️ Manual mode: Click "Next" button to continue'
-                : `✨ Auto-advance to next question after ${autoAdvanceTime} seconds`}
-            </p>
+
+            {autoAdvanceEnabled && (
+              <div className="ml-7 pl-3 border-l-4 border-purple-200">
+                <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">
+                  Auto-Advance Time
+                </label>
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <input
+                    type="range"
+                    min="3"
+                    max="30"
+                    value={autoAdvanceTime}
+                    onChange={(e) => setAutoAdvanceTime(parseInt(e.target.value))}
+                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                  />
+                  <div className="w-20 text-center flex-shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-purple-600">{autoAdvanceTime}s</span>
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-500 mt-2">
+                  ✨ Auto-advance to next question after {autoAdvanceTime} seconds
+                </p>
+              </div>
+            )}
+
+            {!autoAdvanceEnabled && (
+              <p className="text-xs sm:text-sm text-gray-500 ml-7">
+                ⚠️ Manual mode: Host will need to click &quot;Next&quot; button to continue
+              </p>
+            )}
           </div>
 
           <div className="flex items-center">
