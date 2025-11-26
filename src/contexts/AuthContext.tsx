@@ -13,6 +13,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>
   signOut: () => Promise<void>
   signInAnonymously: () => Promise<{ error: any }>
+  signInWithMicrosoft: () => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -72,6 +73,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error }
   }
 
+  const signInWithMicrosoft = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'azure',
+      options: {
+        scopes: 'email profile openid',
+        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/host/dashboard` : undefined,
+      },
+    })
+    return { error }
+  }
+
   const value = {
     user,
     session,
@@ -80,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signOut,
     signInAnonymously,
+    signInWithMicrosoft,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
