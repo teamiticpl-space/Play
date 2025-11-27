@@ -8,7 +8,7 @@ import { getThemeById, DEFAULT_THEME } from '@/utils/themes'
 import HostLiveChat from '@/components/HostLiveChat'
 
 export default function Lobby({
-  participants: participants,
+  participants: allParticipants,
   gameId,
   quizSet,
 }: {
@@ -18,8 +18,11 @@ export default function Lobby({
 }) {
   const theme = getThemeById((quizSet as any).theme_id) || DEFAULT_THEME
   const { Canvas } = useQRCode()
-  const previousParticipantCount = useRef(participants.length)
   const [hostUserId, setHostUserId] = useState<string>('')
+
+  // Filter out host from players list
+  const participants = allParticipants.filter(p => (p as any).user_id !== hostUserId)
+  const previousParticipantCount = useRef(participants.length)
 
   // Get host user ID
   useEffect(() => {

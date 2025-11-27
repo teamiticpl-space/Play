@@ -23,8 +23,20 @@ export default function Results({
   const theme = getThemeById((quizSet as any).theme_id) || DEFAULT_THEME
   const [gameResults, setGameResults] = useState<GameResult[]>([])
   const [participants, setParticipants] = useState<Participant[]>([])
+  const [hostUserId, setHostUserId] = useState<string>('')
 
   const { width, height } = useWindowSize()
+
+  useEffect(() => {
+    // Get host user ID
+    const getHostUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setHostUserId(user.id)
+      }
+    }
+    getHostUserId()
+  }, [])
 
   useEffect(() => {
     const getResults = async () => {
@@ -38,8 +50,6 @@ export default function Results({
         return alert(error.message)
       }
 
-      setGameResults(data)
-
       // Fetch participants with avatars
       const { data: participantsData, error: participantsError } = await supabase
         .from('participants')
@@ -50,10 +60,21 @@ export default function Results({
         console.error('Error fetching participants:', participantsError)
       } else {
         setParticipants(participantsData || [])
+
+        // Filter out host from game results
+        const hostParticipant = participantsData?.find(p => (p as any).user_id === hostUserId)
+        if (hostParticipant && data) {
+          const filteredResults = data.filter(r => r.participant_id !== hostParticipant.id)
+          setGameResults(filteredResults)
+        } else {
+          setGameResults(data || [])
+        }
       }
     }
-    getResults()
-  }, [gameId])
+    if (hostUserId) {
+      getResults()
+    }
+  }, [gameId, hostUserId])
 
   // Helper function to get participant avatar by ID
   const getParticipantAvatar = (participantId: string | null) => {
