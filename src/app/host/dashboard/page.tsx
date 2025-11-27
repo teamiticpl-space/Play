@@ -3,11 +3,13 @@
 import { QuizSet, supabase } from '@/types/types'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
   const [quizSets, setQuizSets] = useState<QuizSet[]>([])
   const [loadingQuizzes, setLoadingQuizzes] = useState(true)
@@ -52,7 +54,7 @@ export default function DashboardPage() {
 
     if (quizError) {
       console.error(quizError)
-      alert('Failed to load quiz settings')
+      alert('โหลดการตั้งค่าควิซไม่สำเร็จ')
       return
     }
 
@@ -69,7 +71,7 @@ export default function DashboardPage() {
 
     if (error) {
       console.error(error)
-      alert('Failed to start game')
+      alert('เริ่มเกมไม่สำเร็จ')
       return
     }
 
@@ -77,7 +79,7 @@ export default function DashboardPage() {
   }
 
   const duplicateQuiz = async (quizId: string, quizName: string) => {
-    const newName = prompt('Enter name for the duplicated quiz:', `${quizName} (Copy)`)
+    const newName = prompt('ใส่ชื่อสำหรับควิซที่ทำสำเนา:', `${quizName} (สำเนา)`)
     if (!newName) return
 
     try {
@@ -88,22 +90,22 @@ export default function DashboardPage() {
 
       if (error) throw error
 
-      alert('Quiz duplicated successfully!')
+      alert('ทำสำเนาควิซสำเร็จ!')
       getQuizSets()
     } catch (err: any) {
-      alert('Failed to duplicate quiz: ' + err.message)
+      alert('ทำสำเนาควิซไม่สำเร็จ: ' + err.message)
     }
   }
 
   const deleteQuiz = async (quizId: string, quizName: string) => {
-    if (!confirm(`Are you sure you want to delete "${quizName}"? This cannot be undone.`)) {
+    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${quizName}"? การดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
       return
     }
 
     const { error } = await supabase.from('quiz_sets').delete().eq('id', quizId)
 
     if (error) {
-      alert('Failed to delete quiz')
+      alert('ลบควิซไม่สำเร็จ')
     } else {
       setQuizSets(quizSets.filter((q) => q.id !== quizId))
     }
@@ -112,7 +114,7 @@ export default function DashboardPage() {
   if (loading || loadingQuizzes) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-xl text-gray-600">Loading...</div>
+        <div className="text-xl text-gray-600">{t.loading}</div>
       </div>
     )
   }
@@ -121,8 +123,8 @@ export default function DashboardPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">My Quizzes</h1>
-          <p className="text-gray-600 mt-1">Manage and play your quiz collections</p>
+          <h1 className="text-3xl font-bold text-gray-800">{t.myQuizzes}</h1>
+          <p className="text-gray-600 mt-1">{t.manageQuizzes}</p>
         </div>
 
         <div className="flex gap-3">
@@ -152,7 +154,7 @@ export default function DashboardPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Create Quiz
+            สร้างควิซ
           </Link>
         </div>
       </div>
@@ -160,13 +162,13 @@ export default function DashboardPage() {
       {quizSets.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-lg shadow-md">
           <div className="text-6xl mb-4">📝</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No quizzes yet</h2>
-          <p className="text-gray-600 mb-6">Create your first quiz to get started!</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">ยังไม่มีควิซ</h2>
+          <p className="text-gray-600 mb-6">สร้างควิซแรกของคุณเพื่อเริ่มต้น!</p>
           <Link
             href="/host/dashboard/create"
             className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-semibold"
           >
-            Create Your First Quiz
+            สร้างควิซแรกของคุณ
           </Link>
         </div>
       ) : (
@@ -182,14 +184,14 @@ export default function DashboardPage() {
 
               <div className="p-5">
                 <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">{quiz.name}</h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{quiz.description || 'No description'}</p>
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{quiz.description || 'ไม่มีคำอธิบาย'}</p>
 
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                   <span className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    {quiz.questions?.length || 0} questions
+                    {quiz.questions?.length || 0} คำถาม
                   </span>
                 </div>
 
@@ -198,26 +200,26 @@ export default function DashboardPage() {
                     onClick={() => startGame(quiz.id)}
                     className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition font-semibold"
                   >
-                    Play
+                    เล่น
                   </button>
                   <button
                     onClick={() => router.push(`/host/dashboard/edit/${quiz.id}`)}
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                    title="Edit"
+                    title="แก้ไข"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => duplicateQuiz(quiz.id, quiz.name)}
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                    title="Duplicate"
+                    title="ทำสำเนา"
                   >
                     📋
                   </button>
                   <button
                     onClick={() => deleteQuiz(quiz.id, quiz.name)}
                     className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"
-                    title="Delete"
+                    title="ลบ"
                   >
                     🗑️
                   </button>
