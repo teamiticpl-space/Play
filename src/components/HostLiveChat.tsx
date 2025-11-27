@@ -78,19 +78,42 @@ export default function HostLiveChat({
     setupHostParticipant()
   }, [gameId, hostUserId])
 
-  // Load participants
-  useEffect(() => {
-    const loadParticipants = async () => {
-      const { data } = await supabase
-        .from('participants')
-        .select('id, nickname, avatar_id')
-        .eq('game_id', gameId)
+  // Load participants function
+  const loadParticipants = async () => {
+    const { data } = await supabase
+      .from('participants')
+      .select('id, nickname, avatar_id')
+      .eq('game_id', gameId)
 
-      if (data) {
-        setParticipants(data)
-      }
+    if (data) {
+      setParticipants(data)
     }
+  }
+
+  // Load participants initially and subscribe to changes
+  useEffect(() => {
     loadParticipants()
+
+    // Subscribe to new participants
+    const participantChannel = supabase
+      .channel(`participants-realtime:${gameId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'participants',
+          filter: `game_id=eq.${gameId}`,
+        },
+        () => {
+          loadParticipants()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(participantChannel)
+    }
   }, [gameId])
 
   // Load initial messages
