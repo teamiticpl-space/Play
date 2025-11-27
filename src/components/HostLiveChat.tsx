@@ -114,7 +114,7 @@ export default function HostLiveChat({
   // Subscribe to new messages
   useEffect(() => {
     const channel = supabase
-      .channel(`host-chat:${gameId}`)
+      .channel(`chat-realtime:${gameId}`)
       .on(
         'postgres_changes',
         {
@@ -125,11 +125,17 @@ export default function HostLiveChat({
         },
         (payload) => {
           const newMsg = payload.new as ChatMessage
-          setMessages((prev) => [...prev, newMsg])
+          setMessages((prev) => {
+            // Prevent duplicates
+            if (prev.some(m => m.id === newMsg.id)) return prev
+            return [...prev, newMsg]
+          })
           setTimeout(scrollToBottom, 100)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Host chat subscription status:', status)
+      })
 
     chatChannelRef.current = channel
 

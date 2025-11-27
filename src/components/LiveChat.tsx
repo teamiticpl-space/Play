@@ -78,7 +78,7 @@ export default function LiveChat({
   // Subscribe to new messages
   useEffect(() => {
     const channel = supabase
-      .channel(`chat:${gameId}`)
+      .channel(`chat-realtime:${gameId}-player-${participantId}`)
       .on(
         'postgres_changes',
         {
@@ -89,11 +89,17 @@ export default function LiveChat({
         },
         (payload) => {
           const newMsg = payload.new as ChatMessage
-          setMessages((prev) => [...prev, newMsg])
+          setMessages((prev) => {
+            // Prevent duplicates
+            if (prev.some(m => m.id === newMsg.id)) return prev
+            return [...prev, newMsg]
+          })
           setTimeout(scrollToBottom, 100)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Player chat subscription status:', status)
+      })
 
     chatChannelRef.current = channel
 
@@ -102,7 +108,7 @@ export default function LiveChat({
         supabase.removeChannel(chatChannelRef.current)
       }
     }
-  }, [gameId])
+  }, [gameId, participantId])
 
   // Send message
   const handleSendMessage = async (e: React.FormEvent) => {
