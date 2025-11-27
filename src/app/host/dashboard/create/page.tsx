@@ -116,27 +116,27 @@ export default function CreateQuizPage() {
 
   const handleSave = async () => {
     if (!quizName.trim()) {
-      setError('Quiz name is required')
+      setError('กรุณาใส่ชื่อควิซ')
       return
     }
 
     if (questions.length === 0) {
-      setError('Add at least one question')
+      setError('กรุณาเพิ่มอย่างน้อย 1 คำถาม')
       return
     }
 
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i]
       if (!q.body.trim()) {
-        setError(`Question ${i + 1} is empty`)
+        setError(`คำถามที่ ${i + 1} ยังว่างอยู่`)
         return
       }
       if (q.choices.filter((c) => c.body.trim()).length < 2) {
-        setError(`Question ${i + 1} needs at least 2 choices`)
+        setError(`คำถามที่ ${i + 1} ต้องมีอย่างน้อย 2 ตัวเลือก`)
         return
       }
       if (!q.choices.some((c) => c.is_correct)) {
-        setError(`Question ${i + 1} needs a correct answer`)
+        setError(`คำถามที่ ${i + 1} ต้องมีคำตอบที่ถูกต้อง`)
         return
       }
     }
@@ -147,7 +147,7 @@ export default function CreateQuizPage() {
     try {
       // Ensure user is authenticated
       if (!user?.id) {
-        setError('You must be logged in to create a quiz')
+        setError('คุณต้องเข้าสู่ระบบเพื่อสร้างควิซ')
         return
       }
 
@@ -188,7 +188,7 @@ export default function CreateQuizPage() {
 
       router.push('/host/dashboard')
     } catch (err: any) {
-      setError(err.message || 'Failed to save quiz')
+      setError(err.message || 'บันทึกควิซไม่สำเร็จ')
       setSaving(false)
     }
   }
@@ -196,8 +196,8 @@ export default function CreateQuizPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Create New Quiz</h1>
-        <p className="text-sm sm:text-base text-gray-600">Design engaging quizzes for your audience</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">สร้างควิซใหม่</h1>
+        <p className="text-sm sm:text-base text-gray-600">ออกแบบควิซที่น่าสนใจสำหรับผู้เล่นของคุณ</p>
       </div>
 
       {error && (
@@ -208,33 +208,33 @@ export default function CreateQuizPage() {
 
       {/* Quiz Details */}
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold mb-4">Quiz Details</h2>
+        <h2 className="text-lg sm:text-xl font-bold mb-4">รายละเอียดควิซ</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Quiz Name *</label>
+            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">ชื่อควิซ *</label>
             <input
               type="text"
               value={quizName}
               onChange={(e) => setQuizName(e.target.value)}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="e.g., World History Quiz"
+              placeholder="เช่น ควิซประวัติศาสตร์โลก"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Description</label>
+            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">คำอธิบาย</label>
             <textarea
               value={quizDescription}
               onChange={(e) => setQuizDescription(e.target.value)}
               rows={3}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Brief description of your quiz"
+              placeholder="คำอธิบายสั้นๆ เกี่ยวกับควิซของคุณ"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Theme</label>
+            <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">ธีม</label>
             <ThemePicker
               selectedThemeId={themeId}
               onSelect={setThemeId}
@@ -251,14 +251,14 @@ export default function CreateQuizPage() {
                 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
               />
               <label htmlFor="autoAdvanceEnabled" className="ml-2 text-gray-700 text-sm sm:text-base font-semibold">
-                ⏱️ Enable Auto-Advance Timer
+                ⏱️ เปิดใช้งานตัวจับเวลาอัตโนมัติ
               </label>
             </div>
 
             {autoAdvanceEnabled && (
               <div className="ml-7 pl-3 border-l-4 border-purple-200">
                 <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">
-                  Auto-Advance Time
+                  เวลาเลื่อนอัตโนมัติ
                 </label>
                 <div className="flex items-center gap-2 sm:gap-4">
                   <input
@@ -270,18 +270,18 @@ export default function CreateQuizPage() {
                     className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
                   />
                   <div className="w-20 text-center flex-shrink-0">
-                    <span className="text-base sm:text-lg font-bold text-purple-600">{autoAdvanceTime}s</span>
+                    <span className="text-base sm:text-lg font-bold text-purple-600">{autoAdvanceTime} วิ</span>
                   </div>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                  ✨ Auto-advance to next question after {autoAdvanceTime} seconds
+                  ✨ เลื่อนไปคำถามถัดไปอัตโนมัติหลังจาก {autoAdvanceTime} วินาที
                 </p>
               </div>
             )}
 
             {!autoAdvanceEnabled && (
               <p className="text-xs sm:text-sm text-gray-500 ml-7">
-                ⚠️ Manual mode: Host will need to click &quot;Next&quot; button to continue
+                ⚠️ โหมดแมนนวล: โฮสต์ต้องกดปุ่ม &quot;ถัดไป&quot; เพื่อดำเนินการต่อ
               </p>
             )}
           </div>
@@ -295,7 +295,7 @@ export default function CreateQuizPage() {
               className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
             />
             <label htmlFor="isPublic" className="ml-2 text-gray-700 text-sm sm:text-base">
-              Make this quiz public (anyone can play)
+              ทำให้ควิซนี้เป็นสาธารณะ (ใครก็สามารถเล่นได้)
             </label>
           </div>
 
@@ -310,26 +310,26 @@ export default function CreateQuizPage() {
                 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
               />
               <label htmlFor="teamMode" className="ml-2 text-gray-700 text-sm sm:text-base font-semibold">
-                🏆 Enable Team Mode
+                🏆 เปิดใช้งานโหมดทีม
               </label>
             </div>
 
             {teamMode && (
               <div className="ml-7 pl-3 border-l-4 border-purple-200">
                 <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">
-                  Number of Teams
+                  จำนวนทีม
                 </label>
                 <select
                   value={maxTeams}
                   onChange={(e) => setMaxTeams(parseInt(e.target.value))}
                   className="w-full sm:w-48 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
                 >
-                  <option value={2}>2 Teams</option>
-                  <option value={3}>3 Teams</option>
-                  <option value={4}>4 Teams</option>
+                  <option value={2}>2 ทีม</option>
+                  <option value={3}>3 ทีม</option>
+                  <option value={4}>4 ทีม</option>
                 </select>
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                  Players will be divided into teams and compete together
+                  ผู้เล่นจะถูกแบ่งเป็นทีมและแข่งขันร่วมกัน
                 </p>
               </div>
             )}
@@ -346,11 +346,11 @@ export default function CreateQuizPage() {
                 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
               />
               <label htmlFor="autoRead" className="ml-2 text-gray-700 text-sm sm:text-base font-semibold">
-                🔊 Auto-Read Questions Aloud
+                🔊 อ่านคำถามออกเสียงอัตโนมัติ
               </label>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-2 ml-7">
-              AI will automatically read each question aloud using text-to-speech
+              AI จะอ่านคำถามแต่ละข้อออกเสียงโดยอัตโนมัติ
             </p>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function CreateQuizPage() {
       {/* Questions */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-          <h2 className="text-lg sm:text-xl font-bold">Questions ({questions.length})</h2>
+          <h2 className="text-lg sm:text-xl font-bold">คำถาม ({questions.length})</h2>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <AIQuizGenerator onQuestionsGenerated={handleAIQuestionsGenerated} />
             <button
@@ -369,7 +369,7 @@ export default function CreateQuizPage() {
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-sm sm:text-base">Add Question</span>
+              <span className="text-sm sm:text-base">เพิ่มคำถาม</span>
             </button>
           </div>
         </div>
@@ -377,13 +377,13 @@ export default function CreateQuizPage() {
         {questions.map((question, qIndex) => (
           <div key={question.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-base sm:text-lg font-semibold text-purple-700">Question {qIndex + 1}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-purple-700">คำถามที่ {qIndex + 1}</h3>
               <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                 <button
                   onClick={() => moveQuestion(qIndex, 'up')}
                   disabled={qIndex === 0}
                   className="p-2 hover:bg-gray-100 rounded disabled:opacity-30"
-                  title="Move up"
+                  title="เลื่อนขึ้น"
                 >
                   ↑
                 </button>
@@ -391,14 +391,14 @@ export default function CreateQuizPage() {
                   onClick={() => moveQuestion(qIndex, 'down')}
                   disabled={qIndex === questions.length - 1}
                   className="p-2 hover:bg-gray-100 rounded disabled:opacity-30"
-                  title="Move down"
+                  title="เลื่อนลง"
                 >
                   ↓
                 </button>
                 <button
                   onClick={() => deleteQuestion(qIndex)}
                   className="p-2 hover:bg-red-100 text-red-600 rounded"
-                  title="Delete"
+                  title="ลบ"
                 >
                   🗑️
                 </button>
@@ -407,19 +407,19 @@ export default function CreateQuizPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Question Text *</label>
+                <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">ข้อความคำถาม *</label>
                 <textarea
                   value={question.body}
                   onChange={(e) => updateQuestion(qIndex, 'body', e.target.value)}
                   rows={2}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Enter your question..."
+                  placeholder="ใส่คำถามของคุณ..."
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Time Limit (seconds)</label>
+                  <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">เวลาจำกัด (วินาที)</label>
                   <input
                     type="number"
                     value={question.time_limit}
@@ -430,7 +430,7 @@ export default function CreateQuizPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Points</label>
+                  <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">คะแนน</label>
                   <input
                     type="number"
                     value={question.points}
@@ -445,7 +445,7 @@ export default function CreateQuizPage() {
 
               {/* Choices */}
               <div>
-                <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">Answer Choices *</label>
+                <label className="block text-gray-700 text-sm sm:text-base font-medium mb-2">ตัวเลือกคำตอบ *</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   {question.choices.map((choice, cIndex) => (
                     <div
@@ -464,7 +464,7 @@ export default function CreateQuizPage() {
                         value={choice.body}
                         onChange={(e) => updateChoice(qIndex, cIndex, 'body', e.target.value)}
                         className="flex-1 px-2 sm:px-3 py-1 sm:py-2 text-sm sm:text-base border-0 bg-transparent focus:outline-none"
-                        placeholder={`Choice ${cIndex + 1}`}
+                        placeholder={`ตัวเลือก ${cIndex + 1}`}
                       />
                       <button
                         onClick={() => setCorrectAnswer(qIndex, cIndex)}
@@ -474,7 +474,7 @@ export default function CreateQuizPage() {
                             : 'bg-gray-200 hover:bg-gray-300'
                         }`}
                       >
-                        {choice.is_correct ? '✓' : 'Set'}
+                        {choice.is_correct ? '✓' : 'ตั้ง'}
                       </button>
                     </div>
                   ))}
@@ -486,12 +486,12 @@ export default function CreateQuizPage() {
 
         {questions.length === 0 && (
           <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-            <p className="text-gray-500 mb-4 text-sm sm:text-base">No questions yet. Start adding questions to your quiz!</p>
+            <p className="text-gray-500 mb-4 text-sm sm:text-base">ยังไม่มีคำถาม เริ่มเพิ่มคำถามในควิซของคุณเลย!</p>
             <button
               onClick={addQuestion}
               className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg hover:bg-purple-700 transition active:scale-95"
             >
-              Add First Question
+              เพิ่มคำถามแรก
             </button>
           </div>
         )}
@@ -503,14 +503,14 @@ export default function CreateQuizPage() {
           onClick={() => router.push('/host/dashboard')}
           className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg hover:bg-gray-50 transition active:scale-95"
         >
-          Cancel
+          ยกเลิก
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
           className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition disabled:opacity-50 active:scale-95"
         >
-          {saving ? 'Saving...' : 'Save Quiz'}
+          {saving ? 'กำลังบันทึก...' : 'บันทึกควิซ'}
         </button>
       </div>
     </div>

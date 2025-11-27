@@ -48,7 +48,7 @@ export default function ProfilePage() {
     setMessage('')
 
     if (!user?.id) {
-      setMessage('User not authenticated')
+      setMessage('ผู้ใช้ไม่ได้เข้าสู่ระบบ')
       setSaving(false)
       return
     }
@@ -63,9 +63,9 @@ export default function ProfilePage() {
       .eq('id', user.id)
 
     if (error) {
-      setMessage('Error saving profile')
+      setMessage('เกิดข้อผิดพลาดในการบันทึกโปรไฟล์')
     } else {
-      setMessage('Profile saved successfully!')
+      setMessage('บันทึกโปรไฟล์สำเร็จ!')
     }
 
     setSaving(false)
@@ -74,7 +74,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">กำลังโหลด...</div>
       </div>
     )
   }
@@ -85,10 +85,10 @@ export default function ProfilePage() {
 
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
+          <h1 className="text-3xl font-bold mb-6">ตั้งค่าโปรไฟล์</h1>
 
           {message && (
-            <div className={`p-4 rounded mb-4 ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+            <div className={`p-4 rounded mb-4 ${message.includes('ผิดพลาด') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
               {message}
             </div>
           )}
@@ -96,7 +96,7 @@ export default function ProfilePage() {
           <form onSubmit={handleSave} className="space-y-6">
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Email
+                อีเมล
               </label>
               <input
                 type="email"
@@ -104,45 +104,45 @@ export default function ProfilePage() {
                 disabled
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
               />
-              <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+              <p className="text-sm text-gray-500 mt-1">ไม่สามารถเปลี่ยนอีเมลได้</p>
             </div>
 
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Full Name
+                ชื่อเต็ม
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="John Doe"
+                placeholder="สมชาย ใจดี"
               />
             </div>
 
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Username
+                ชื่อผู้ใช้
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="johndoe"
+                placeholder="somchai"
               />
             </div>
 
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Bio
+                ประวัติย่อ
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Tell us about yourself..."
+                placeholder="บอกเล่าเกี่ยวกับตัวคุณ..."
               />
             </div>
 
@@ -151,7 +151,7 @@ export default function ProfilePage() {
               disabled={saving}
               className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Profile'}
+              {saving ? 'กำลังบันทึก...' : 'บันทึกโปรไฟล์'}
             </button>
           </form>
         </div>

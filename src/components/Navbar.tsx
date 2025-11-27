@@ -30,13 +30,13 @@ export default function Navbar() {
                   href="/host/dashboard"
                   className="px-4 py-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition"
                 >
-                  My Quizzes
+                  ควิซของฉัน
                 </Link>
                 <Link
                   href="/host/dashboard/create"
                   className="px-4 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-opacity-90 transition"
                 >
-                  Create Quiz
+                  สร้างควิซ
                 </Link>
 
                 <div className="relative">
@@ -62,20 +62,20 @@ export default function Navbar() {
                         className="block px-4 py-2 hover:bg-gray-100"
                         onClick={() => setShowMenu(false)}
                       >
-                        Profile
+                        โปรไฟล์
                       </Link>
                       <Link
                         href="/host/dashboard/analytics"
                         className="block px-4 py-2 hover:bg-gray-100"
                         onClick={() => setShowMenu(false)}
                       >
-                        Analytics
+                        วิเคราะห์ข้อมูล
                       </Link>
                       <button
                         onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
                       >
-                        Sign Out
+                        ออกจากระบบ
                       </button>
                     </div>
                   )}
@@ -89,13 +89,13 @@ export default function Navbar() {
                   href="/auth/login"
                   className="px-4 py-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition"
                 >
-                  Sign In
+                  เข้าสู่ระบบ
                 </Link>
                 <Link
                   href="/auth/register"
                   className="px-4 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-opacity-90 transition"
                 >
-                  Sign Up
+                  สมัครสมาชิก
                 </Link>
               </>
             )}

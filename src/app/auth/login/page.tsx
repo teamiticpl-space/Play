@@ -55,14 +55,14 @@ export default function LoginPage() {
             <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
             <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
           </svg>
-          {loading ? 'Signing in...' : 'Sign in with Microsoft'}
+          {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบด้วย Microsoft'}
         </button>
 
         <Link
           href="/game"
           className="block mt-6 text-[#007bff] no-underline text-base transition-colors duration-200 hover:text-[#0056b3] hover:underline"
         >
-          Join a game as guest
+          เข้าร่วมเกมในฐานะผู้เล่น
         </Link>
       </div>
     </div>
