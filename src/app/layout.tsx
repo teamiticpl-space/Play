@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -21,10 +20,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="th">
       <body className={montserrat.className}>
         <Providers>
-          <LanguageSwitcher />
           {children}
         </Providers>
       </body>

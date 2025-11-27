@@ -3,13 +3,11 @@
 import { QuizSet, supabase } from '@/types/types'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
-  const { t } = useLanguage()
   const router = useRouter()
   const [quizSets, setQuizSets] = useState<QuizSet[]>([])
   const [loadingQuizzes, setLoadingQuizzes] = useState(true)
@@ -114,7 +112,7 @@ export default function DashboardPage() {
   if (loading || loadingQuizzes) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-xl text-gray-600">{t.loading}</div>
+        <div className="text-xl text-gray-600">กำลังโหลด...</div>
       </div>
     )
   }
@@ -123,8 +121,8 @@ export default function DashboardPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">{t.myQuizzes}</h1>
-          <p className="text-gray-600 mt-1">{t.manageQuizzes}</p>
+          <h1 className="text-3xl font-bold text-gray-800">ควิซของฉัน</h1>
+          <p className="text-gray-600 mt-1">จัดการและสร้างควิซของคุณ</p>
         </div>
 
         <div className="flex gap-3">
