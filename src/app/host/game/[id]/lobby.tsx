@@ -19,7 +19,6 @@ export default function Lobby({
   const theme = getThemeById((quizSet as any).theme_id) || DEFAULT_THEME
   const { Canvas } = useQRCode()
   const [hostUserId, setHostUserId] = useState<string>('')
-  const [musicEnabled, setMusicEnabled] = useState(false)
 
   // Filter out host from players list
   const participants = allParticipants.filter(p => (p as any).user_id !== hostUserId)
@@ -36,15 +35,10 @@ export default function Lobby({
     getHostUserId()
   }, [])
 
-  // Enable music on first user interaction
-  const enableMusic = () => {
-    if (!musicEnabled) {
-      playMusic('lobby')
-      setMusicEnabled(true)
-    }
-  }
-
+  // Auto play lobby music
   useEffect(() => {
+    playMusic('lobby')
+
     return () => {
       // Stop music when leaving lobby
       stopMusic()
@@ -76,19 +70,8 @@ export default function Lobby({
     <div
       className="flex justify-center items-center min-h-screen bg-cover bg-center bg-no-repeat px-4 py-8"
       style={{ backgroundImage: "url('/BGlobby.jpg')" }}
-      onClick={enableMusic}
     >
       <SoundControl />
-
-      {/* Music enable button - shows only if music not enabled */}
-      {!musicEnabled && (
-        <button
-          onClick={enableMusic}
-          className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-purple-700 transition z-50 flex items-center gap-2 animate-pulse"
-        >
-          🎵 คลิกเพื่อเปิดเสียง
-        </button>
-      )}
 
       <div className="flex flex-col lg:flex-row justify-between gap-6 m-auto bg-white bg-opacity-95 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border-2 sm:border-4 border-orange-400 w-full max-w-7xl">
         {/* Left Column: Players List */}

@@ -23,7 +23,7 @@ class SoundManager {
         join: 'https://cdn.pixabay.com/audio/2022/03/10/audio_f42a9e649f.mp3', // Player join notification
         start: 'https://cdn.pixabay.com/audio/2022/03/15/audio_942594ff19.mp3', // Game start
         celebrate: 'https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3', // Victory fanfare
-        lobby: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', // Upbeat lobby background music
+        lobby: '/lobby-music.mp3', // Local lobby background music
       }
 
       // Preload sounds with error handling
