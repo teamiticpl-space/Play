@@ -22,6 +22,45 @@ interface AIQuizGeneratorProps {
   onQuestionsGenerated: (questions: Question[]) => void
 }
 
+// Function to extract text from PDF using PDF.js from CDN
+async function extractTextFromPDF(file: File): Promise<string> {
+  // Load PDF.js from CDN if not already loaded
+  if (typeof window !== 'undefined' && !(window as any).pdfjsLib) {
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load PDF.js'))
+      document.head.appendChild(script)
+    })
+
+    // Set worker
+    const pdfjsLib = (window as any).pdfjsLib
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+  }
+
+  const pdfjsLib = (window as any).pdfjsLib
+  if (!pdfjsLib) {
+    throw new Error('PDF.js not loaded')
+  }
+
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+
+  let fullText = ''
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const textContent = await page.getTextContent()
+    const pageText = textContent.items
+      .map((item: any) => item.str)
+      .join(' ')
+    fullText += pageText + '\n'
+  }
+
+  return fullText.trim()
+}
+
 export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'topic' | 'text' | 'url' | 'pdf'>('topic')
@@ -85,12 +124,22 @@ export default function AIQuizGenerator({ onQuestionsGenerated }: AIQuizGenerato
             setGenerating(false)
             return
           }
-          // Read PDF file (in a real implementation, you'd parse the PDF)
-          // For now, we'll just use the filename as placeholder
-          content = `PDF: ${pdfFile.name}`
-          setError('PDF parsing is not yet implemented. Please use other methods.')
-          setGenerating(false)
-          return
+          try {
+            // Extract text from PDF
+            const pdfText = await extractTextFromPDF(pdfFile)
+            if (!pdfText || pdfText.length < 50) {
+              setError('ไม่สามารถอ่านเนื้อหาจาก PDF ได้ หรือ PDF มีเนื้อหาน้อยเกินไป')
+              setGenerating(false)
+              return
+            }
+            content = pdfText
+          } catch (pdfError) {
+            console.error('PDF parsing error:', pdfError)
+            setError('ไม่สามารถอ่านไฟล์ PDF ได้ กรุณาลองไฟล์อื่น')
+            setGenerating(false)
+            return
+          }
+          break
       }
 
       // Call API to generate quiz
