@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-import * as cheerio from 'cheerio'
 
 // Force dynamic rendering - do not pre-render at build time
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Use edge runtime for longer timeout on Netlify (30s vs 10s for nodejs)
+export const runtime = 'edge'
+export const maxDuration = 30
 
 interface GenerateQuizRequest {
   type: 'topic' | 'text' | 'url' | 'pdf'
@@ -29,7 +24,7 @@ interface QuizQuestion {
   explanation?: string
 }
 
-// Fetch and parse content from URL
+// Fetch and parse content from URL (Edge-compatible without cheerio)
 async function fetchUrlContent(url: string): Promise<string> {
   try {
     const response = await fetch(url, {
@@ -38,22 +33,38 @@ async function fetchUrlContent(url: string): Promise<string> {
       },
     })
     const html = await response.text()
-    const $ = cheerio.load(html)
 
-    // Remove script, style, and other non-content elements
-    $('script, style, nav, footer, header, aside').remove()
+    // Simple HTML to text conversion without cheerio (Edge-compatible)
+    let text = html
+      // Remove script and style tags with their content
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      // Remove nav, footer, header, aside tags
+      .replace(/<(nav|footer|header|aside)[^>]*>[\s\S]*?<\/\1>/gi, '')
+      // Remove all remaining HTML tags
+      .replace(/<[^>]+>/g, ' ')
+      // Decode common HTML entities
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Clean up whitespace
+      .replace(/\s+/g, ' ')
+      .trim()
 
-    // Get main content text
-    const text = $('body').text().trim().replace(/\s+/g, ' ').slice(0, 10000) // Limit to 10k chars
-    return text
+    return text.slice(0, 10000) // Limit to 10k chars
   } catch (error) {
     throw new Error(`Failed to fetch URL: ${error}`)
   }
 }
 
-// Generate quiz using OpenAI
+// Generate quiz using OpenRouter with Gemini Flash 2.5
 async function generateQuiz(request: GenerateQuizRequest): Promise<QuizQuestion[]> {
-  const { type, content, numberOfQuestions = 10, difficulty = 'medium' } = request
+  // Allow up to 10 questions
+  const { type, content, numberOfQuestions = 5, difficulty = 'medium' } = request
+  const actualQuestions = Math.min(numberOfQuestions, 10)
 
   let promptContent = ''
 
@@ -63,24 +74,26 @@ async function generateQuiz(request: GenerateQuizRequest): Promise<QuizQuestion[
       break
 
     case 'text':
-      promptContent = `Create a quiz based on the following content:\n\n${content.slice(0, 8000)}`
+      // Limit content to 4000 chars for faster processing
+      promptContent = `Create a quiz based on the following content:\n\n${content.slice(0, 4000)}`
       break
 
     case 'url':
       const urlContent = await fetchUrlContent(content)
-      promptContent = `Create a quiz based on the content from this URL (${content}):\n\n${urlContent}`
+      // URL content already limited to 10k, slice to 4k for prompt
+      promptContent = `Create a quiz based on the content from this URL (${content}):\n\n${urlContent.slice(0, 4000)}`
       break
 
     case 'pdf':
-      // PDF content is already extracted and passed in content
-      promptContent = `Create a quiz based on the following PDF content:\n\n${content.slice(0, 8000)}`
+      // PDF content is already extracted and passed in content - limit to 4000 chars
+      promptContent = `Create a quiz based on the following PDF content:\n\n${content.slice(0, 4000)}`
       break
   }
 
   const systemPrompt = `You are an expert quiz creator. Create engaging, educational quiz questions.
 
 Instructions:
-1. Generate exactly ${numberOfQuestions} multiple-choice questions
+1. Generate exactly ${actualQuestions} multiple-choice questions
 2. Each question should have exactly 4 answer choices
 3. Mark exactly ONE choice as correct
 4. Make questions ${difficulty} difficulty level
@@ -116,26 +129,34 @@ Return ONLY a valid JSON array with this exact structure:
 Do not include any markdown formatting, code blocks, or extra text. Return ONLY the JSON array.`
 
   try {
-    // Adjust max_tokens based on number of questions to stay within Netlify timeout (10s)
-    // Reduced token limit for faster response
-    const estimatedTokens = Math.min(numberOfQuestions * 200 + 300, 2000)
-
-    const completion = await openai.chat.completions.create(
-      {
-        model: 'gpt-4o-mini', // Using GPT-4o-mini for speed and cost efficiency
+    // Call OpenRouter API with Gemini Flash 2.5
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://icpg-quiz.netlify.app',
+        'X-Title': 'ICPG Quiz Generator',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash', // Gemini 2.5 Flash - fast and cost-effective
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: promptContent },
         ],
         temperature: 0.7,
-        max_tokens: estimatedTokens,
-      },
-      {
-        timeout: 25000, // 25 seconds timeout for OpenAI API
-      }
-    )
+        max_tokens: actualQuestions * 400 + 200,
+      }),
+    })
 
-    const responseText = completion.choices[0].message.content?.trim() || '[]'
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('OpenRouter API Error:', response.status, errorData)
+      throw new Error(`OpenRouter API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const responseText = data.choices?.[0]?.message?.content?.trim() || '[]'
 
     // Try to extract JSON if it's wrapped in markdown code blocks
     let jsonText = responseText
@@ -167,7 +188,7 @@ Do not include any markdown formatting, code blocks, or extra text. Return ONLY 
     return questions
 
   } catch (error: any) {
-    console.error('OpenAI API Error:', error)
+    console.error('OpenRouter API Error:', error)
     throw new Error(`Failed to generate quiz: ${error.message}`)
   }
 }
@@ -175,12 +196,12 @@ Do not include any markdown formatting, code blocks, or extra text. Return ONLY 
 export async function POST(request: NextRequest) {
   try {
     // Check for API key
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not configured')
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error('OPENROUTER_API_KEY is not configured')
       return NextResponse.json(
         {
           success: false,
-          error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables.'
+          error: 'OpenRouter API key not configured. Please add OPENROUTER_API_KEY to your environment variables.'
         },
         { status: 500 }
       )
