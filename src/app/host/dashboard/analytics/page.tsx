@@ -31,6 +31,8 @@ interface PlayerRanking {
   participant_id: string
   nickname: string
   total_score: number
+  correct_answers: number
+  total_questions: number
   rank: number
 }
 
@@ -123,13 +125,45 @@ export default function AnalyticsPage() {
       .eq('game_id', gameId)
       .order('total_score', { ascending: false })
 
-    // Add rank to each player
-    const rankedData: PlayerRanking[] = (data || []).map((player: any, index: number) => ({
-      participant_id: player.participant_id,
-      nickname: player.nickname,
-      total_score: player.total_score || 0,
-      rank: index + 1,
-    }))
+    // Get total questions count for this game
+    const { data: gameData } = await supabase
+      .from('games')
+      .select('quiz_set_id')
+      .eq('id', gameId)
+      .single()
+
+    let totalQuestions = 0
+    if (gameData?.quiz_set_id) {
+      const { count } = await supabase
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('quiz_set_id', gameData.quiz_set_id)
+      totalQuestions = count || 0
+    }
+
+    // Get correct answers count for each participant
+    const rankedData: PlayerRanking[] = await Promise.all(
+      (data || []).map(async (player: any, index: number) => {
+        // Count correct answers for this participant
+        const { data: answersData } = await supabase
+          .from('answers')
+          .select('choice_id, choices!inner(is_correct)')
+          .eq('participant_id', player.participant_id)
+
+        const correctCount = (answersData || []).filter(
+          (a: any) => a.choices?.is_correct === true
+        ).length
+
+        return {
+          participant_id: player.participant_id,
+          nickname: player.nickname,
+          total_score: player.total_score || 0,
+          correct_answers: correctCount,
+          total_questions: totalQuestions,
+          rank: index + 1,
+        }
+      })
+    )
 
     setLeaderboard(rankedData)
   }
@@ -146,6 +180,46 @@ export default function AnalyticsPage() {
     const scores = quizAnalytics.filter((q) => q.avg_score).map((q) => q.avg_score)
     if (scores.length === 0) return 0
     return Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length)
+  }
+
+  const exportToExcel = () => {
+    if (leaderboard.length === 0) return
+
+    // Get selected game info for filename
+    const selectedGameInfo = gameSessions.find(g => g.id === selectedGame)
+    const gameDate = selectedGameInfo
+      ? new Date(selectedGameInfo.created_at).toLocaleDateString('th-TH', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).replace(/\//g, '-')
+      : 'export'
+
+    // Create CSV content
+    const headers = ['ลำดับ', 'ชื่อผู้เล่น', 'ตอบถูก', 'คะแนนรวม']
+    const rows = leaderboard.map(player => [
+      player.rank,
+      player.nickname,
+      `${player.correct_answers}/${player.total_questions}`,
+      player.total_score
+    ])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n')
+
+    // Add BOM for Thai character support in Excel
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `leaderboard_${gameDate}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (loading) {
@@ -321,6 +395,17 @@ export default function AnalyticsPage() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">ลำดับคะแนนผู้เล่น</h2>
+            {leaderboard.length > 0 && (
+              <button
+                onClick={exportToExcel}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export Excel
+              </button>
+            )}
           </div>
 
           {/* Game Session Selector */}
@@ -353,6 +438,7 @@ export default function AnalyticsPage() {
                   <tr>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 w-20">ลำดับ</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">ชื่อผู้เล่น</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">ตอบถูก</th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">คะแนนรวม</th>
                   </tr>
                 </thead>
@@ -374,6 +460,11 @@ export default function AnalyticsPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800 font-medium">{player.nickname}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded font-medium text-sm">
+                          {player.correct_answers}/{player.total_questions}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-center">
                         <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-bold">
                           {player.total_score.toLocaleString()}
