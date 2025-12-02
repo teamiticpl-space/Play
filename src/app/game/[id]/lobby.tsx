@@ -187,23 +187,19 @@ function Register({
       return
     }
 
-    // Ensure we have a session before inserting
-    let userId: string | null = null
-    const { data: sessionData } = await supabase.auth.getSession()
+    // Always sign out first to get a fresh anonymous user for each game
+    // This prevents "duplicate key" error from user_id constraint
+    await supabase.auth.signOut()
 
-    if (sessionData.session) {
-      userId = sessionData.session.user.id
-    } else {
-      // Sign in anonymously if no session
-      const { data, error: authError } = await supabase.auth.signInAnonymously()
-      if (authError) {
-        console.error('Auth error:', authError)
-        alert('Failed to authenticate. Please try again.')
-        setSending(false)
-        return
-      }
-      userId = data?.user?.id ?? null
+    // Sign in anonymously with fresh user
+    const { data, error: authError } = await supabase.auth.signInAnonymously()
+    if (authError) {
+      console.error('Auth error:', authError)
+      alert('Failed to authenticate. Please try again.')
+      setSending(false)
+      return
     }
+    const userId = data?.user?.id ?? null
 
     if (!userId) {
       alert('Failed to get user ID. Please refresh and try again.')
