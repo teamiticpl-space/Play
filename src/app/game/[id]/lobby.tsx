@@ -1,5 +1,4 @@
 import { Participant, supabase } from '@/types/types'
-import { on } from 'events'
 import { FormEvent, useEffect, useState } from 'react'
 import AvatarPicker from '@/components/AvatarPicker'
 import { getRandomAvatar } from '@/utils/avatars'
@@ -34,28 +33,28 @@ export default function Lobby({
 
       if (gameError) {
         console.error('Game fetch error:', gameError)
-      } else {
-        setGame(gameData as Game)
+        return
       }
 
-      // Load participant
+      setGame(gameData as Game)
+
+      // Load participant - only check if already registered for THIS game
       let userId: string | null = null
 
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession()
+      const { data: sessionData } = await supabase.auth.getSession()
 
       if (sessionData.session) {
         userId = sessionData.session?.user.id ?? null
       } else {
-        const { data, error } = await supabase.auth.signInAnonymously()
-        if (error) console.error(error)
-        userId = data?.user?.id ?? null
+        // Don't auto sign-in here - wait for user to register
+        return
       }
 
       if (!userId) {
         return
       }
 
+      // Check if user already registered for THIS specific game
       const { data: participantData, error } = await supabase
         .from('participants')
         .select()
@@ -64,9 +63,11 @@ export default function Lobby({
         .maybeSingle()
 
       if (error) {
-        return alert(error.message)
+        console.error('Participant fetch error:', error)
+        return
       }
 
+      // Only auto-login if participant exists for THIS game
       if (participantData) {
         setParticipant(participantData)
         onRegisterCompleted(participantData)
@@ -94,7 +95,6 @@ export default function Lobby({
         {!participant && game && (
           <Register
             gameId={gameId}
-            game={game}
             onRegisterCompleted={(participant) => {
               onRegisterCompleted(participant)
               setParticipant(participant)
@@ -173,11 +173,9 @@ export default function Lobby({
 function Register({
   onRegisterCompleted,
   gameId,
-  game,
 }: {
   onRegisterCompleted: (player: Participant) => void
   gameId: string
-  game: Game
 }) {
   const [nickname, setNickname] = useState('')
   const [avatarId, setAvatarId] = useState('cat') // Fixed default to prevent hydration mismatch
