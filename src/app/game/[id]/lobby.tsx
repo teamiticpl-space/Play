@@ -38,40 +38,32 @@ export default function Lobby({
 
       setGame(gameData as Game)
 
-      // Load participant - only check if already registered for THIS game
-      let userId: string | null = null
+      // Check localStorage for existing participant in THIS game
+      const storageKey = `participant_${gameId}`
+      const savedParticipantId = localStorage.getItem(storageKey)
 
-      const { data: sessionData } = await supabase.auth.getSession()
-
-      if (sessionData.session) {
-        userId = sessionData.session?.user.id ?? null
-      } else {
-        // Don't auto sign-in here - wait for user to register
+      if (!savedParticipantId) {
+        // No saved participant for this game - show register form
         return
       }
 
-      if (!userId) {
-        return
-      }
-
-      // Check if user already registered for THIS specific game
+      // Verify participant still exists in database
       const { data: participantData, error } = await supabase
         .from('participants')
         .select()
+        .eq('id', savedParticipantId)
         .eq('game_id', gameId)
-        .eq('user_id', userId)
         .maybeSingle()
 
-      if (error) {
-        console.error('Participant fetch error:', error)
+      if (error || !participantData) {
+        // Participant not found - clear localStorage and show register form
+        localStorage.removeItem(storageKey)
         return
       }
 
-      // Only auto-login if participant exists for THIS game
-      if (participantData) {
-        setParticipant(participantData)
-        onRegisterCompleted(participantData)
-      }
+      // Valid participant found - auto-login
+      setParticipant(participantData)
+      onRegisterCompleted(participantData)
     }
 
     fetchGameAndParticipant()
@@ -236,6 +228,10 @@ function Register({
       setSending(false)
       return alert(error.message)
     }
+
+    // Save participant_id to localStorage for this specific game
+    const storageKey = `participant_${gameId}`
+    localStorage.setItem(storageKey, participant.id)
 
     onRegisterCompleted(participant)
   }
