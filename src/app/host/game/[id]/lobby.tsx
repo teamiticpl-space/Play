@@ -20,6 +20,7 @@ export default function Lobby({
   const { Canvas } = useQRCode()
   const [hostUserId, setHostUserId] = useState<string>('')
   const [musicStarted, setMusicStarted] = useState(false)
+  const [isQRExpanded, setIsQRExpanded] = useState(false)
 
   // Filter out host from players list
   const participants = allParticipants.filter(p => (p as any).user_id !== hostUserId)
@@ -90,7 +91,7 @@ export default function Lobby({
         </button>
       )}
 
-      <div className="flex flex-col lg:flex-row justify-between gap-6 m-auto bg-white bg-opacity-95 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border-2 sm:border-4 border-orange-400 w-full max-w-7xl">
+      <div className="flex flex-col lg:flex-row justify-center gap-6 m-auto bg-white bg-opacity-95 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border-2 sm:border-4 border-orange-400 w-full max-w-5xl">
         {/* Left Column: Players List */}
         <div className="w-full lg:w-80 xl:w-96">
           <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mb-4 sm:mb-6">Waiting for Players...</h2>
@@ -130,7 +131,11 @@ export default function Lobby({
         {/* Middle Column: QR Code */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl border-2 sm:border-4 border-yellow-400">
           <p className="text-center font-bold text-orange-600 text-lg sm:text-xl mb-3 sm:mb-4">📱 Scan to Join!</p>
-          <div className="flex justify-center">
+          <div
+            className="flex justify-center cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => setIsQRExpanded(true)}
+            title="คลิกเพื่อขยาย QR Code"
+          >
             <Canvas
               text={`${typeof window !== 'undefined' ? window.location.origin : ''}/game/${gameId}`}
               options={{
@@ -141,13 +146,52 @@ export default function Lobby({
               }}
             />
           </div>
-          <p className="text-center text-xs sm:text-sm text-gray-700 mt-3 sm:mt-4 font-semibold">
+          <p className="text-center text-xs text-gray-400 mt-2">คลิกเพื่อขยาย</p>
+          <p className="text-center text-xs sm:text-sm text-gray-700 mt-2 sm:mt-3 font-semibold">
             Or go to: <span className="text-orange-600">{typeof window !== 'undefined' ? window.location.host : ''}</span>
           </p>
           <p className="text-center text-xs text-gray-500 mt-1">
             Game PIN: <span className="font-mono font-bold text-orange-600">{gameId.slice(0, 6)}...</span>
           </p>
         </div>
+
+        {/* QR Code Expanded Modal */}
+        {isQRExpanded && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+            onClick={() => setIsQRExpanded(false)}
+          >
+            <div
+              className="bg-white p-8 rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-center font-bold text-orange-600 text-2xl mb-6">📱 Scan to Join!</p>
+              <div className="flex justify-center">
+                <Canvas
+                  text={`${typeof window !== 'undefined' ? window.location.origin : ''}/game/${gameId}`}
+                  options={{
+                    errorCorrectionLevel: 'M',
+                    margin: 3,
+                    scale: 4,
+                    width: 400,
+                  }}
+                />
+              </div>
+              <p className="text-center text-lg text-gray-700 mt-6 font-semibold">
+                Or go to: <span className="text-orange-600">{typeof window !== 'undefined' ? window.location.host : ''}</span>
+              </p>
+              <p className="text-center text-base text-gray-500 mt-2">
+                Game PIN: <span className="font-mono font-bold text-orange-600 text-xl">{gameId.slice(0, 6)}...</span>
+              </p>
+              <button
+                className="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"
+                onClick={() => setIsQRExpanded(false)}
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Right Column: Live Chat - Hidden: not ready */}
         {/* <div className="w-full lg:w-96 xl:w-[450px]">
